@@ -5,6 +5,8 @@ import Leaderboard from "./components/Leaderboard";
 import Tasks from "./components/Tasks";
 import Profile from "./components/Profile";
 import Home from "./components/Home";
+import EliseChatbot from './components/EliseChatbot';
+
 
 function App() {
     return (
@@ -17,6 +19,7 @@ function App() {
                     <Route path="/leaderboard" element={<Leaderboard />} />
                     <Route path="/profile" element={<Profile />} />
                 </Routes>
+            <EliseChatbot />
             </Router>
         </div>
     );

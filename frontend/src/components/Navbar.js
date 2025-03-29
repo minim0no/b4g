@@ -37,7 +37,7 @@ const Navbar = () => {
                                 to="/tasks"
                                 className="text-green-600 hover:text-white"
                             >
-                                Tasks
+                                Feed
                             </Link>
                             <Link
                                 to="/leaderboard"

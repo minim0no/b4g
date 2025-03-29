@@ -15,7 +15,7 @@ const Navbar = () => {
               backgroundAttachment: "fixed",
           }
         : {
-              backgroundColor: "#333333", // bg-gray-600 or any color you prefer
+              backgroundColor: "#e5f6df", // bg-gray-600 or any color you prefer
           };
 
     return (

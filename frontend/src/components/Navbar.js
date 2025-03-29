@@ -34,7 +34,7 @@ const Navbar = () => {
                                 Home
                             </Link>
                             <Link
-                                to="/tasks"
+                                to="/feed"
                                 className="text-green-600 hover:text-white"
                             >
                                 Feed

@@ -6,13 +6,14 @@ import {
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
+import WaterFillCard from "./WaterFillCard"; // adjust the path as needed
 
 const Profile = () => {
     // User authentication state
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Registration form states
+    // Registration form states (for sign up)
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
     const [email, setEmail] = useState("");
@@ -24,13 +25,12 @@ const Profile = () => {
     // User profile data
     const [profileData, setProfileData] = useState(null);
 
-    // Check if user is logged in
+    // Check if user is logged in and fetch profile data
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setLoading(true);
 
             if (currentUser) {
-                // User is logged in, fetch their profile data
                 try {
                     const userDoc = await getDoc(
                         doc(db, "users", currentUser.uid)
@@ -44,7 +44,6 @@ const Profile = () => {
                     setError("Failed to load profile data.");
                 }
             } else {
-                // User is not logged in
                 setUser(null);
                 setProfileData(null);
             }
@@ -52,7 +51,6 @@ const Profile = () => {
             setLoading(false);
         });
 
-        // Cleanup subscription on unmount
         return () => unsubscribe();
     }, []);
 
@@ -62,21 +60,18 @@ const Profile = () => {
         setError(null);
 
         try {
-            // Create user with email and password
             const userCredential = await createUserWithEmailAndPassword(
                 auth,
                 email,
                 password
             );
-            const user = userCredential.user;
+            const newUser = userCredential.user;
 
-            // Update user profile with display name (first name + last name)
-            await updateProfile(user, {
+            await updateProfile(newUser, {
                 displayName: `${firstName} ${lastName}`,
             });
 
-            // Save additional user data to Firestore
-            await setDoc(doc(db, "users", user.uid), {
+            await setDoc(doc(db, "users", newUser.uid), {
                 firstName,
                 lastName,
                 email,
@@ -85,7 +80,6 @@ const Profile = () => {
                 taskHistory: [],
             });
 
-            // Show success message
             setSuccess(true);
 
             // Reset form
@@ -101,7 +95,6 @@ const Profile = () => {
         }
     };
 
-    // Show loading indicator while checking auth state
     if (loading) {
         return (
             <div className="bg-gray-100 min-h-screen flex items-center justify-center">
@@ -118,88 +111,130 @@ const Profile = () => {
         );
     }
 
-    // User is logged in, show profile
+    // When user is logged in and profile data exists, display profile and water fill cards side by side
     if (user && profileData) {
+        // Determine rank details and threshold for water fill card based on ecoPoints
+        // Adjust thresholds and rank images as needed
+        let rankName = "Seedling";
+        let rankImage = "./seed.png"; // Replace with your image URL
+        let maxPoints = 100;
+
+        if (profileData.ecoPoints >= 100 && profileData.ecoPoints < 250) {
+            rankName = "Blooming";
+            rankImage = "./flower2.png"; // Replace with your image URL
+            maxPoints = 250;
+        } else if (
+            profileData.ecoPoints >= 250 &&
+            profileData.ecoPoints < 500
+        ) {
+            rankName = "Flourishing";
+            rankImage = "./flower3.png"; // Replace with your image URL
+            maxPoints = 500;
+        } else if (profileData.ecoPoints >= 500) {
+            rankName = "Thriving";
+            rankImage = "./flower4.png"; // Replace with your image URL
+            maxPoints = 1000;
+        }
+
         return (
             <div className="bg-gray-100 min-h-screen pt-12 pb-20">
-                <div className="max-w-md mx-auto bg-white rounded-lg shadow p-8">
-                    <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
-                        Your Profile
-                    </h2>
+                <div className="max-w-6xl mx-auto px-4">
+                    {/* Flex container for side-by-side layout */}
+                    <div className="flex flex-col md:flex-row gap-8">
+                        {/* Profile Card */}
+                        <div className="flex-1 bg-white rounded-lg shadow p-8">
+                            <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+                                Your Profile
+                            </h2>
 
-                    <div className="text-center mb-8">
-                        <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <span className="text-green-600 text-2xl font-bold">
-                                {profileData.firstName?.charAt(0)}
-                                {profileData.lastName?.charAt(0)}
-                            </span>
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-800">
-                            {profileData.firstName} {profileData.lastName}
-                        </h3>
-                        <p className="text-gray-600">{user.email}</p>
-                    </div>
-
-                    <div className="border-t border-gray-200 pt-6">
-                        <div className="flex justify-between items-center mb-4">
-                            <span className="text-gray-700 font-medium">
-                                Eco Points
-                            </span>
-                            <span className="text-green-600 font-bold text-xl">
-                                {profileData.ecoPoints || 0}
-                            </span>
-                        </div>
-
-                        <h4 className="text-lg font-bold text-gray-800 mb-4">
-                            Recent Activities
-                        </h4>
-
-                        {profileData.taskHistory &&
-                        profileData.taskHistory.length > 0 ? (
-                            <div className="space-y-3">
-                                {profileData.taskHistory.map((task, index) => (
-                                    <div
-                                        key={index}
-                                        className="bg-gray-50 p-3 rounded flex justify-between items-center"
-                                    >
-                                        <div>
-                                            <p className="font-medium">
-                                                {task.name}
-                                            </p>
-                                            <p className="text-sm text-gray-500">
-                                                {task.date
-                                                    ?.toDate()
-                                                    .toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                        <span className="text-green-600">
-                                            +{task.points} pts
-                                        </span>
-                                    </div>
-                                ))}
+                            <div className="text-center mb-8">
+                                <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <span className="text-green-600 text-2xl font-bold">
+                                        {profileData.firstName?.charAt(0)}
+                                        {profileData.lastName?.charAt(0)}
+                                    </span>
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-800">
+                                    {profileData.firstName}{" "}
+                                    {profileData.lastName}
+                                </h3>
+                                <p className="text-gray-600">{user.email}</p>
                             </div>
-                        ) : (
-                            <p className="text-center text-gray-500 py-4">
-                                No activities recorded yet. Start completing
-                                eco-tasks to see them here!
-                            </p>
-                        )}
-                    </div>
 
-                    <div className="mt-8 flex justify-center">
-                        <button
-                            onClick={() => auth.signOut()}
-                            className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
-                        >
-                            Sign Out
-                        </button>
+                            <div className="border-t border-gray-200 pt-6">
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className="text-gray-700 font-medium">
+                                        Eco Points
+                                    </span>
+                                    <span className="text-green-600 font-bold text-xl">
+                                        {profileData.ecoPoints || 0}
+                                    </span>
+                                </div>
+
+                                <h4 className="text-lg font-bold text-gray-800 mb-4">
+                                    Recent Activities
+                                </h4>
+
+                                {profileData.taskHistory &&
+                                profileData.taskHistory.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {profileData.taskHistory.map(
+                                            (task, index) => (
+                                                <div
+                                                    key={index}
+                                                    className="bg-gray-50 p-3 rounded flex justify-between items-center"
+                                                >
+                                                    <div>
+                                                        <p className="font-medium">
+                                                            {task.name}
+                                                        </p>
+                                                        <p className="text-sm text-gray-500">
+                                                            {task.date
+                                                                ?.toDate()
+                                                                .toLocaleDateString()}
+                                                        </p>
+                                                    </div>
+                                                    <span className="text-green-600">
+                                                        +{task.points} pts
+                                                    </span>
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                ) : (
+                                    <p className="text-center text-gray-500 py-4">
+                                        No activities recorded yet. Start
+                                        completing eco-tasks to see them here!
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="mt-8 flex justify-center">
+                                <button
+                                    onClick={() => auth.signOut()}
+                                    className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded hover:bg-gray-50"
+                                >
+                                    Sign Out
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Water Fill Card */}
+                        <div className="flex-1">
+                            <WaterFillCard
+                                totalPoints={profileData.ecoPoints || 0}
+                                maxPoints={maxPoints}
+                                rankImage={rankImage}
+                                rankName={rankName}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
         );
     }
 
-    // User is not logged in, show registration form
+    // If user is not logged in, show registration form
     return (
         <div className="bg-gray-100 min-h-screen pt-12 pb-20">
             <div className="max-w-md mx-auto bg-white rounded-lg shadow p-8">

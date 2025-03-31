@@ -7,7 +7,7 @@ import Home from "./components/Home";
 import Login from "./components/Login";
 import { AuthProvider } from "./context/AuthContext";
 import Feed from "./components/Feed";
-import EliseChatbot from "./components/EliseChatbot";
+//import EliseChatbot from "./components/EliseChatbot";
 
 function App() {
     return (
@@ -22,7 +22,6 @@ function App() {
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/login" element={<Login />} />
                     </Routes>
-                    <EliseChatbot />
                 </Router>
             </div>
         </AuthProvider>

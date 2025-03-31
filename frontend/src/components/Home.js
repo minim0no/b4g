@@ -291,7 +291,7 @@ function Home() {
             >
                 <div className="max-w-4xl mx-auto text-center px-6">
                     <h1 className="text-5xl md:text-6xl font-extrabold mb-6 drop-shadow-lg">
-                        Make an Impact with Eco-Elise
+                        Make an Impact with EcoTracker
                     </h1>
                     <p className="text-lg md:text-xl mb-8 max-w-2xl mx-auto leading-relaxed">
                         Complete eco-friendly tasks to earn points, compete with
